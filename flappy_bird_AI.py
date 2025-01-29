@@ -1,3 +1,4 @@
+import neat.config
 import pygame
 import neat
 import time
@@ -178,9 +179,10 @@ def draw_window(win, bird, pipes, base, score):
     bird.draw(win)
     pygame.display.update()
 
-    
-def main():
-    bird=Bird(230,350)
+# since all the data is here, this main func will become our fitness function as well which is being passed in the winner func    
+def main(genomes, config):
+    birds=[]
+
     base=Base(730)
     pipes=[Pipe(600)]
     win=pygame.display.set_mode((WINDOWS_WIDTH, WINDOWS_HEIGHT))
@@ -200,15 +202,16 @@ def main():
         add_pipe=False
         remove=[]
         for pipe in pipes:
-            if pipe.collide(bird):
-                pass
+            for bird in birds:
+                if pipe.collide(bird): # every pipe collides with every bird
+                    pass
+
+                if not pipe.passed and pipe.x < birds.x: #if birds have passed pipe
+                    pipe.passed = True
+                    add_pipe=True
 
             if pipe.x+pipe.PIPE_TOP.get_width()<0:
                 remove.append(pipe)
-
-            if not pipe.passed and pipe.x < bird.x:
-                 pipe.passed = True
-                 add_pipe=True
 
             pipe.move()
 
@@ -219,8 +222,9 @@ def main():
         for r in remove:
             pipes.remove(r)
 
-        if bird.y + bird.img.get_height() >= 730:
-            pass
+        for bird in birds:
+             if bird.y + bird.img.get_height() >= 730:
+                pass
 
         base.move()
         draw_window(win, bird, pipes, base, score)
@@ -230,3 +234,21 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+def run(config_path): # define all the different sub-headings we used in config file
+    config=neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
+                              neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                              config_path)
+
+    p=neat.Population(config) # setting population
+
+    p.add_reporter(neat.StdOutReporter(True)) # results for statistics for the population
+    stats=neat.StatisticsReporter()
+    p.add_reporter(stats)
+
+    winner= p.run(main, 50)
+
+if __name__ == "__main__":
+    local_dir=os.path.dirname(__file__)
+    config_path=os.path.join(local_dir, "config-feedforward.txt")
+    run(config_path)
