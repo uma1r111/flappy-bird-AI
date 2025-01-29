@@ -181,7 +181,19 @@ def draw_window(win, bird, pipes, base, score):
 
 # since all the data is here, this main func will become our fitness function as well which is being passed in the winner func    
 def main(genomes, config):
+    # to keep track of neural networks for birds, each position(nets, ge, birds) will correspond to same bird
+    nets=[]
+    ge=[]
     birds=[]
+
+    # creating neural network
+    for g in genomes:
+        net=neat.nn.FeedForwardNetwork(g, config)
+        nets.append(net)
+        birds.append(Bird(230, 350))
+        ge.append(g)
+        g.fitness=0
+
 
     base=Base(730)
     pipes=[Pipe(600)]
@@ -202,9 +214,13 @@ def main(genomes, config):
         add_pipe=False
         remove=[]
         for pipe in pipes:
-            for bird in birds:
+            for x,bird in enumerate(birds):
                 if pipe.collide(bird): # every pipe collides with every bird
-                    pass
+                    ge[x].fitness -= 1
+                    # if birds collide they will be popped from the list
+                    birds.pop(x)
+                    nets.pop(x)
+                    ge.pop(x)
 
                 if not pipe.passed and pipe.x < birds.x: #if birds have passed pipe
                     pipe.passed = True
@@ -217,14 +233,19 @@ def main(genomes, config):
 
         if add_pipe:
             score += 1
+            #incrementing fitness for birds that passed a pipe without colliding
+            for g in ge:
+                g.fitness += 5
             pipes.append(Pipe(600))
 
         for r in remove:
             pipes.remove(r)
 
-        for bird in birds:
+        for x, bird in enumerate(birds):
              if bird.y + bird.img.get_height() >= 730:
-                pass
+                birds.pop(x)
+                nets.pop(x)
+                ge.pop(x)
 
         base.move()
         draw_window(win, bird, pipes, base, score)
