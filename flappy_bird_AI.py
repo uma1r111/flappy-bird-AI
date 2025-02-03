@@ -150,7 +150,7 @@ class Base:
         self.x2=self.WIDTH
 
     # we use two base img (x1, x2). Both will travel towards left with equal velocity, once first img reaches end of screen
-    # it will be moved behind the second img. Second img will then travel towards end and then gets placed behnd first img.
+    # it will be moved behind the second img. Second img will then travel towards end and then gets placed behind first img.
     # This will create infinite loop
     def move(self):
         self.x1 -= self.VEL
@@ -216,16 +216,15 @@ def main(genomes, config):
             if event.type == pygame.QUIT:
                 run=False
                 pygame.quit()
-                quit()
+                
         
         # if bird passes first pipe then convert it to second pipe
         pipe_ind = 0
         if len(birds)>0:
-            if len(pipes) > 1 and birds[0].x > pipes[0].x + pipes[0].PIPE_TOP.get_width():
-                pipe_ind = 1
-            else:
-                run=False 
-                break # no birds left so quit game
+            if len(birds) == 0:
+                run = False
+                break
+
         
         # to not allow bird to fly all the way up or down, just enough to make it survive
         for x, bird in enumerate(birds):
@@ -249,7 +248,7 @@ def main(genomes, config):
                     nets.pop(x)
                     ge.pop(x)
 
-                if not pipe.passed and pipe.x < birds.x: #if birds have passed pipe
+                if not pipe.passed and pipe.x < birds[0].x: #if birds have passed pipe
                     pipe.passed = True
                     add_pipe=True
 
