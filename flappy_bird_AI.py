@@ -94,8 +94,9 @@ class Bird:
         return pygame.mask.from_surface(self.img)
 
 class Pipe:
-    GAP=500
-    VEL=5
+    GAP = 200  # Reduce gap for better challenge
+    VEL = 5
+    Y_VEL = 2  # Speed for up-down movement
 
     def __init__(self, x):
         self.x=x
@@ -108,9 +109,10 @@ class Pipe:
 
         self.passed=False
         self.set_height()
+        self.direction = 1  # 1 for moving down, -1 for moving up
 
     def set_height(self):
-        self.height=random.randrange(50, 450)
+        self.height=random.randrange(150, 450)
         # what we are doing here is that the pipe at top is inverted so it will come 
         # all the way down
         self.top=self.height-self.PIPE_TOP.get_height()
@@ -118,6 +120,16 @@ class Pipe:
 
     def move(self):
         self.x -= self.VEL
+
+        # Make pipes move up and down
+        if self.height <= 150:
+            self.direction = 1  # Move down if too high
+        elif self.height >= 400:
+            self.direction = -1  # Move up if too low
+
+        self.height += self.Y_VEL * self.direction  # Move pipe up or down
+        self.top = self.height - self.PIPE_TOP.get_height()
+        self.bottom = self.height + self.GAP
 
     def draw(self, win):
         win.blit(self.PIPE_TOP, (self.x, self.top))
